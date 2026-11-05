@@ -25,3 +25,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Hardhat
+/artifacts/
+/cache/
+/typechain-types/
+
+# Generated contract files (rebuild with pnpm chain:compile && pnpm chain:export-abi)
+/lib/contracts/EduCredential.abi.json
+/lib/contracts/deployments.json
