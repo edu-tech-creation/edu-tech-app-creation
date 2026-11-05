@@ -43,12 +43,25 @@ export default function Page() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [synced, setSynced] = useState(false)
+  const [activityCount, setActivityCount] = useState<number | null>(null)
   const [showInvoice, setShowInvoice] = useState(false)
 
   const copyAddress = async () => {
     await navigator.clipboard?.writeText('payments*oakridge.edu')
     setCopied(true)
     setTimeout(() => setCopied(false), 1600)
+  }
+
+  const syncDashboard = async () => {
+    setSynced(true)
+    try {
+      const response = await fetch('/api/learning', { cache: 'no-store' })
+      if (!response.ok) throw new Error('Unable to sync learning activity')
+      const data = await response.json()
+      setActivityCount(Array.isArray(data.activities) ? data.activities.length : 0)
+    } finally {
+      setTimeout(() => setSynced(false), 1200)
+    }
   }
 
   return (
@@ -69,7 +82,7 @@ export default function Page() {
 
         <div className="content-grid">
           <section className="main-column">
-            <div className="hero-card"><div className="glow one" /><div className="glow two" /><div className="hero-heading"><div className="label-with-icon"><span className="small-icon"><Wallet size={15} /></span><span>INSTITUTIONAL TREASURY</span></div><span className="verified"><span className="status-dot" /> Audited vault</span></div><div className="hero-balance">$148,920<span>.45</span></div><div className="balance-caption">USD reserve value <b><TrendingUp size={13} /> +4.2%</b> <small>this month</small></div><div className="hero-bottom"><span><ShieldCheck size={15} /> SEP-0024 compliant</span><button onClick={() => { setSynced(true); setTimeout(() => setSynced(false), 1200) }}><RefreshCw size={14} className={synced ? 'spin' : ''} /> {synced ? 'Synced' : 'Sync balance'}</button></div></div>
+            <div className="hero-card"><div className="glow one" /><div className="glow two" /><div className="hero-heading"><div className="label-with-icon"><span className="small-icon"><Wallet size={15} /></span><span>INSTITUTIONAL TREASURY</span></div><span className="verified"><span className="status-dot" /> Audited vault</span></div><div className="hero-balance">$148,920<span>.45</span></div><div className="balance-caption">USD reserve value <b><TrendingUp size={13} /> +4.2%</b> <small>this month</small></div><div className="hero-bottom"><span><ShieldCheck size={15} /> SEP-0024 compliant</span><button onClick={syncDashboard}><RefreshCw size={14} className={synced ? 'spin' : ''} /> {synced ? 'Synced' : 'Sync balance'}</button></div></div>
 
             <div className="action-grid"><button className="primary-action" onClick={() => setShowInvoice(true)}><span><Plus size={21} /></span><b>New invoice</b><small>Request payment</small></button><button className="action-card"><span><Landmark size={20} /></span><b>Off-ramp</b><small>Bank transfer</small></button><button className="action-card" onClick={copyAddress}><span><ShieldCheck size={20} /></span><b>Federation</b><small>oakridge.edu</small>{copied && <label><Check size={12} /> Copied</label>}</button></div>
 
@@ -79,7 +92,7 @@ export default function Page() {
             <div className="section-heading recent-heading"><div><h2>Recent global inflows <span className="pulse" /></h2><p>Live settlement activity</p></div><button>View all (48) <ArrowUpRight size={14} /></button></div><div className="inflows">{inflows.map(({ title, source, amount, time, icon: Icon, tone }) => <div className="inflow" key={title}><span className={`inflow-icon ${tone}`}><Icon size={19} /></span><div className="inflow-copy"><b>{title}</b><span>{source} <i>·</i> {time}</span></div><div className="inflow-amount"><b>{amount}</b><span><span className="status-dot" /> Verified</span></div><MoreHorizontal size={18} className="more" /></div>)}</div>
           </section>
 
-          <aside className="right-column"><div className="mini-card"><div className="mini-header"><span>SETTLEMENT PIPELINE</span><span className="live-badge"><span className="live-dot" /> LIVE</span></div><div className="pipeline-value">$8,450.00 <small>incoming</small></div><div className="progress"><span /></div><div className="pipeline-meta"><span>2 transactions resolving</span><b>&lt;15 sec</b></div></div><div className="mini-card federation"><div className="mini-header"><span>SCHOOL FEDERATION ENDPOINT</span><ShieldCheck size={16} /></div><div className="endpoint"><GraduationCap size={17} /><b>payments*oakridge.edu</b><button onClick={copyAddress} aria-label="Copy federation address">{copied ? <Check size={16} /> : <Copy size={16} />}</button></div><p>Linked to Standard Chartered KE <b>#88390</b></p></div><div className="mini-card quick-card"><div className="mini-header"><span>QUICK INSIGHTS</span><Sparkles size={16} /></div><div className="insight"><span className="insight-icon green"><TrendingUp size={17} /></span><div><b>Tuition is up 18.4%</b><span>Compared to last term</span></div><ArrowUpRight size={15} /></div><div className="insight"><span className="insight-icon blue"><GraduationCap size={17} /></span><div><b>12 scholarships funded</b><span>Across 4 programs this week</span></div><ArrowUpRight size={15} /></div></div><div className="help-card"><span><Sparkles size={18} /></span><div><b>Need help moving funds?</b><p>Talk to an education finance specialist.</p><button>Open support chat <ArrowUpRight size={13} /></button></div></div></aside>
+          <aside className="right-column"><div className="mini-card"><div className="mini-header"><span>SETTLEMENT PIPELINE</span><span className="live-badge"><span className="live-dot" /> LIVE</span></div><div className="pipeline-value">$8,450.00 <small>incoming</small></div><div className="progress"><span /></div><div className="pipeline-meta"><span>{activityCount === null ? '2 transactions resolving' : `${activityCount} learning records synced`}</span><b>&lt;15 sec</b></div></div><div className="mini-card federation"><div className="mini-header"><span>SCHOOL FEDERATION ENDPOINT</span><ShieldCheck size={16} /></div><div className="endpoint"><GraduationCap size={17} /><b>payments*oakridge.edu</b><button onClick={copyAddress} aria-label="Copy federation address">{copied ? <Check size={16} /> : <Copy size={16} />}</button></div><p>Linked to Standard Chartered KE <b>#88390</b></p></div><div className="mini-card quick-card"><div className="mini-header"><span>QUICK INSIGHTS</span><Sparkles size={16} /></div><div className="insight"><span className="insight-icon green"><TrendingUp size={17} /></span><div><b>Tuition is up 18.4%</b><span>Compared to last term</span></div><ArrowUpRight size={15} /></div><div className="insight"><span className="insight-icon blue"><GraduationCap size={17} /></span><div><b>12 scholarships funded</b><span>Across 4 programs this week</span></div><ArrowUpRight size={15} /></div></div><div className="help-card"><span><Sparkles size={18} /></span><div><b>Need help moving funds?</b><p>Talk to an education finance specialist.</p><button>Open support chat <ArrowUpRight size={13} /></button></div></div></aside>
         </div>
       </section>
       {showInvoice && <div className="modal-backdrop" onClick={() => setShowInvoice(false)}><div className="modal" onClick={(e) => e.stopPropagation()}><button className="modal-close" onClick={() => setShowInvoice(false)}><X size={18} /></button><span className="modal-icon"><Plus size={21} /></span><h2>Create payment request</h2><p>Generate a secure invoice for tuition or a grant disbursement.</p><label>Payment description<input defaultValue="Term 2 international tuition" /></label><label>Amount (USD)<input defaultValue="3400.00" /></label><button className="modal-submit" onClick={() => setShowInvoice(false)}>Generate invoice <ArrowUpRight size={15} /></button></div></div>}
