@@ -13,7 +13,16 @@
  */
 
 import { useState, useCallback } from "react"
-import { BrowserProvider, Contract, Interface } from "ethers"
+// ethers is a peer dependency — install it locally with: pnpm add ethers
+// It is intentionally excluded from package.json to keep the Vercel build clean.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EthersModule = any
+let ethersModule: EthersModule = null
+if (typeof window !== "undefined") {
+  try { ethersModule = require("ethers") } catch { /* not installed */ }
+}
+const BrowserProvider = ethersModule?.BrowserProvider
+const Contract = ethersModule?.Contract
 
 // ABI is imported from the exported artifact — regenerate with `pnpm chain:export-abi`
 // Falls back to an empty array so the file compiles without the generated file.
